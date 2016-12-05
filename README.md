@@ -6,7 +6,7 @@ This macro helps managing aliases inside FreeCAD Spreadsheet workbench. It is ab
 	- move aliases from one column to other one
 	- create a "part family", that's it, create different files for each column in a range. It will add
 	 to the original name a suffix based on first row (1)
-![Screenshot](/../multimedia/screenshot.png?raw=true "Alias Manager screenshot")
+![Screenshot](/../Multimedia/screenshot.png?raw=true "Alias Manager screenshot")
 	 
 	 
 More information might be found on FreeCAD forums: http://forum.freecadweb.org/
