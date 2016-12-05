@@ -36,8 +36,8 @@ __date__    = "20/11/2016"
  
 __Comment__ = "This macro helps managing aliases inside FreeCAD Spreadsheet workbench. It is able to create, delete, move aliases and create a 'part family' group of files"
  
-__Wiki__ = ""
-__Help__ = ""
+__Wiki__ = "https://github.com/pgilfernandez/FreeCAD_AliasManager"
+__Help__ = "https://github.com/pgilfernandez/FreeCAD_AliasManager"
 __Status__ = "stable"
 __Requires__ = "FreeCAD 0.16"
 
