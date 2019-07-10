@@ -92,6 +92,13 @@ class infoPopup(QtGui.QDialog):
 alphabet_list = list(string.ascii_uppercase)
 
 class p():
+
+    def getContents(self,obj,cell):
+        res = obj.getContents(cell)
+        if res and res[0]=="'":
+            return res[1:]
+        return res
+
     def aliasManager(self):
         try:
 
@@ -109,7 +116,7 @@ class p():
                     cell_from = 'A' + str(i)
                     cell_to = str(column_from) + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_from))
+                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, self.getContents(App.ActiveDocument.Spreadsheet,cell_from))
                     App.ActiveDocument.recompute()
 
                 FreeCAD.Console.PrintMessage("\nAliases set\n")
@@ -135,7 +142,7 @@ class p():
                     cell_to = column_to + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                     App.ActiveDocument.recompute()
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, self.getContents(App.ActiveDocument.Spreadsheet,cell_reference))
                     App.ActiveDocument.recompute()
                 FreeCAD.Console.PrintMessage("\nAliases moved\n")
 
@@ -166,12 +173,12 @@ class p():
                         cell_to = str(fam_range[index]) + str(i)
                         App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                         App.ActiveDocument.recompute()
-                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, self.getContents(App.ActiveDocument.Spreadsheet,cell_reference))
                         App.ActiveDocument.recompute()
                         sfx = str(fam_range[index]) + '1'
 
                     # save file
-                    suffix = App.ActiveDocument.Spreadsheet.getContents(sfx)
+                    suffix = self.getContents(App.ActiveDocument.Spreadsheet,sfx)
                     filename = filePrefix + '_' + suffix + '.fcstd'
                     filePath = os.path.join(docDir, filename)
                 
@@ -360,3 +367,4 @@ class p():
         self.dialog2 = infoPopup()
         self.dialog2.exec_()
 p() 
+
