@@ -168,7 +168,8 @@ class p():
                         App.ActiveDocument.recompute()
                         App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
                         App.ActiveDocument.recompute()
-                        sfx = str(fam_range[index]) + '1'
+                        sfx = str(fam_range[index]) + str(row_from - 1) #'1'
+                        FreeCAD.Console.PrintMessage(str(cell_reference) + ", " + str(cell_from) + ", " + str(cell_to) + ", " + str(sfx) +"\n")
 
                     # save file
                     suffix = App.ActiveDocument.Spreadsheet.getContents(sfx)
