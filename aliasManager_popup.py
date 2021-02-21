@@ -151,7 +151,7 @@ class p():
 
                 def char_range(c1, c2):
                     """Generates the characters from `c1` to `c2`, inclusive."""
-                    for c in xrange(ord(c1), ord(c2)+1):
+                    for c in range(ord(c1), ord(c2)+1):
                         yield str.capitalize(chr(c))
 
                 fam_range = []
@@ -168,15 +168,19 @@ class p():
                         App.ActiveDocument.recompute()
                         App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
                         App.ActiveDocument.recompute()
-                        sfx = str(fam_range[index]) + '1'
+                        sfx = str(fam_range[index]) + str(row_from - 1) #'1'
+                        FreeCAD.Console.PrintMessage(str(cell_reference) + ", " + str(cell_from) + ", " + str(cell_to) + ", " + str(sfx) +"\n")
 
-                    # save file
+                    # save COPY of each file, keeps original file open with original name.
                     suffix = App.ActiveDocument.Spreadsheet.getContents(sfx)
                     filename = filePrefix + '_' + suffix + '.fcstd'
                     filePath = os.path.join(docDir, filename)
                 
-                    FreeCAD.Console.PrintMessage("\nSaving view to %s\n" % filePath)
-                    App.getDocument(filePrefix).saveAs(filePath)
+                    #Some designs prob need refresh/compute before save
+                    App.ActiveDocument.recompute()
+                    FreeCAD.Console.PrintMessage("\nSaving copy file to %s\n" % filePath)
+                    doc.saveCopy(filePath)
+                    #App.getDocument(filePrefix).saveAs(filePath)
 
                 # Clear last aliases created:
                 for j in range(row_from,row_to+1):
@@ -184,11 +188,7 @@ class p():
                     App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
                 App.ActiveDocument.recompute()
 
-                # Turn working file to original naming:
-                filename = filePrefix + '.fcstd'
-                filePath = os.path.join(docDir, filename)
-                FreeCAD.Console.PrintMessage("\nSaving original view to %s\n" % filePath)
-                App.getDocument(filePrefix).saveAs(filePath)
+                doc.save()
                 FreeCAD.Console.PrintMessage("\nPart family files generated\n")
 
 
