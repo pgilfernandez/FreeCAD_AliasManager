@@ -205,8 +205,8 @@ class p():
                 FreeCAD.Console.PrintError("\nError or 'TODO'\n")
 
 
-        except:
-            FreeCAD.Console.PrintError("\nUnable to complete task\n")
+        except Exception as e:
+            FreeCAD.Console.PrintError("\nUnable to complete task: %s\n", e)
  
             self.close()
  
