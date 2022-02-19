@@ -92,6 +92,12 @@ class infoPopup(QtGui.QDialog):
 alphabet_list = list(string.ascii_uppercase)
 
 class p():
+    def get_active_spreadsheet(self):
+        active_object = Gui.Selection.getSelectionEx()[0].Object
+        if active_object.TypeId != 'Spreadsheet::Sheet':
+            raise("No spreadsheet selected!")
+        return active_object
+
     def aliasManager(self):
         try:
 
@@ -101,15 +107,15 @@ class p():
             column_to = self.d3.currentText()
             row_from = self.d4.value()
             row_to = self.d5.value()
-
+            active_spreadsheet = self.get_active_spreadsheet()
 
 # ===== Mode - Set ==============================================
             if mode == "Set aliases":
                 for i in range(row_from,row_to+1):
                     cell_from = 'A' + str(i)
                     cell_to = str(column_from) + str(i)
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_from))
+                    active_spreadsheet.setAlias(cell_to, '')
+                    active_spreadsheet.setAlias(cell_to, active_spreadsheet.getContents(cell_from))
                     App.ActiveDocument.recompute()
 
                 FreeCAD.Console.PrintMessage("\nAliases set\n")
@@ -119,7 +125,7 @@ class p():
             elif mode == "Clear aliases":
                 for i in range(row_from,row_to+1):
                     cell_to = str(column_from) + str(i)
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
+                    active_spreadsheet.setAlias(cell_to, '')
                     App.ActiveDocument.recompute()
 
                 FreeCAD.Console.PrintMessage("\nAliases cleared\n")
@@ -133,9 +139,9 @@ class p():
                     cell_reference = 'A'+ str(i)                        
                     cell_from = column_from + str(i)
                     cell_to = column_to + str(i)
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
+                    active_spreadsheet.setAlias(cell_from, '')
                     App.ActiveDocument.recompute()
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                    active_spreadsheet.setAlias(cell_to, active_spreadsheet.getContents(cell_reference))
                     App.ActiveDocument.recompute()
                 FreeCAD.Console.PrintMessage("\nAliases moved\n")
 
@@ -164,14 +170,14 @@ class p():
                         cell_reference = 'A' + str(i)
                         cell_from = str(fam_range[index-1]) + str(i)
                         cell_to = str(fam_range[index]) + str(i)
-                        App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
+                        active_spreadsheet.setAlias(cell_from, '')
                         App.ActiveDocument.recompute()
-                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                        active_spreadsheet.setAlias(cell_to, active_spreadsheet.getContents(cell_reference))
                         App.ActiveDocument.recompute()
                         sfx = str(fam_range[index]) + '1'
 
                     # save file
-                    suffix = App.ActiveDocument.Spreadsheet.getContents(sfx)
+                    suffix = active_spreadsheet.getContents(sfx)
                     filename = filePrefix + '_' + suffix + '.fcstd'
                     filePath = os.path.join(docDir, filename)
                 
@@ -181,7 +187,7 @@ class p():
                 # Clear last aliases created:
                 for j in range(row_from,row_to+1):
                     cell_to = str(column_to) + str(j)
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
+                    active_spreadsheet.setAlias(cell_to, '')
                 App.ActiveDocument.recompute()
 
                 # Turn working file to original naming:
@@ -198,8 +204,8 @@ class p():
                 FreeCAD.Console.PrintError("\nError or 'TODO'\n")
 
 
-        except:
-            FreeCAD.Console.PrintError("\nUnable to complete task\n")
+        except Exception as e:
+            FreeCAD.Console.PrintError("\nUnable to complete task: %s\n", e)
  
             self.close()
  
@@ -360,3 +366,4 @@ class p():
         self.dialog2 = infoPopup()
         self.dialog2.exec_()
 p() 
+
