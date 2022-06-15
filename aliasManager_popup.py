@@ -41,6 +41,8 @@ __Help__ = "https://github.com/pgilfernandez/FreeCAD_AliasManager"
 __Status__ = "stable"
 __Requires__ = "FreeCAD 0.16"
 
+from ast import Try
+from warnings import catch_warnings
 from PySide import QtGui, QtCore
 from FreeCAD import Gui
 import os
@@ -132,9 +134,13 @@ class p():
                 for i in range(row_from,row_to+1):
                     cell_from = str(alias_column) + str(i)
                     cell_to = str(column_from) + str(i)
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
-                    Apix + '.fcstd'.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.get(cell_from))
-                    App.ActiveDocument.recompute()
+                    try:
+                        alias =  App.ActiveDocument.Spreadsheet.get(cell_from)
+                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
+                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, alias)
+                        App.ActiveDocument.recompute()
+                    except:
+                        pass                        
 
                 FreeCAD.Console.PrintMessage("\nAliases set\n")
 
