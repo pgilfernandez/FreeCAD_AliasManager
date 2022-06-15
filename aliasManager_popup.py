@@ -45,8 +45,15 @@ from PySide import QtGui, QtCore
 from FreeCAD import Gui
 import os
 import string
+import traceback
+
 App = FreeCAD
 Gui = FreeCADGui
+
+# ==
+# person = Object(name = "Bernhard", gender = "male", age = 42)
+# https://stackoverflow.com/questions/652276/is-it-possible-to-create-anonymous-objects-in-python
+Object = lambda **kwargs: type("Object", (), kwargs)
 
 # ========================================================
 # ===== Info popup window ================================
@@ -91,22 +98,39 @@ class infoPopup(QtGui.QDialog):
 # ===== Global variables ==============================================
 alphabet_list = list(string.ascii_uppercase)
 
+property_definitions = [
+    Object(name = "AliasColumn", type = "App::PropertyString", tooltip = "The colom where the aliasses reside"),
+    Object(name = "ColumnFrom", type = "App::PropertyString", tooltip = "Last used column"),
+    Object(name = "RowFrom", type = "App::PropertyInteger", tooltip = "Last used row from"),
+    Object(name = "RowTo", type = "App::PropertyInteger", tooltip = "Last used row to")
+]
+
 class p():
     def aliasManager(self):
         try:
 
 # ===== Variables ==============================================
             mode = self.d1.currentText()
-            column_from = self.d2.currentText()
-            column_to = self.d3.currentText()
+            alias_column = self.d0.text()
+            column_from = self.d2.text()
+            column_to = self.d3.text()
             row_from = self.d4.value()
             row_to = self.d5.value()
 
+# ===== Save Variables to ease further run =====================
+            for prop in property_definitions:
+                if not App.ActiveDocument.Spreadsheet.PropertiesList.__contains__(prop.name):
+                    App.ActiveDocument.Spreadsheet.addProperty(prop.type, prop.name, "Alias Manager", prop.tooltip)
+
+            App.ActiveDocument.Spreadsheet.AliasColumn = alias_column
+            App.ActiveDocument.Spreadsheet.ColumnFrom = column_from
+            App.ActiveDocument.Spreadsheet.RowFrom = row_from
+            App.ActiveDocument.Spreadsheet.RowTo = row_to
 
 # ===== Mode - Set ==============================================
             if mode == "Set aliases":
                 for i in range(row_from,row_to+1):
-                    cell_from = 'A' + str(i)
+                    cell_from = str(alias_column) + str(i)
                     cell_to = str(column_from) + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
                     App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_from))
@@ -127,10 +151,12 @@ class p():
 
 # ===== Mode - Move ==============================================
             elif mode == "Move aliases":
+                # Next time we probably want to use the moved column as the from column
+                App.ActiveDocument.Spreadsheet.ColumnFrom = column_to
 
                 self.d3.setDisabled(False)
                 for i in range(row_from,row_to+1):
-                    cell_reference = 'A'+ str(i)                        
+                    cell_reference = str(alias_column) + str(i)
                     cell_from = column_from + str(i)
                     cell_to = column_to + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
@@ -161,7 +187,7 @@ class p():
                 for index in range(len(fam_range)):
                     # set aliases
                     for i in range(row_from,row_to+1):
-                        cell_reference = 'A' + str(i)
+                        cell_reference = str(alias_column) + str(i)
                         cell_from = str(fam_range[index-1]) + str(i)
                         cell_to = str(fam_range[index]) + str(i)
                         App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
@@ -200,7 +226,8 @@ class p():
 
         except:
             FreeCAD.Console.PrintError("\nUnable to complete task\n")
- 
+            traceback.print_exc()
+
             self.close()
  
 
@@ -235,21 +262,23 @@ class p():
 
         # Hide/show "to column" label and spinbox based on mode type
         def disableWidget(currentIndex):
-            if self.d1.currentText() == "Set aliases":
-                iN3.hide()
-                self.d3.setEnabled(False)
-                self.d3.hide()
-            elif self.d1.currentText() == "Clear aliases":
-                iN3.hide()
-                self.d3.setEnabled(False)
-                self.d3.hide()
-            else:
+            # Hide by default
+            iN0.hide()
+            self.d0.setEnabled(False)
+            self.d0.hide()
+
+            iN3.hide()
+            self.d3.setEnabled(False)
+            self.d3.hide()
+
+            if self.d1.currentText() != "Clear aliases":
+                iN0.show()
+                self.d0.setEnabled(True)
+                self.d0.show()
+            if not (self.d1.currentText() == "Set aliases" or self.d1.currentText() == "Clear aliases"):
                 iN3.show()
                 self.d3.setEnabled(True)
                 self.d3.show()
-
-
-
 
         self.dialog = None
         
@@ -257,7 +286,15 @@ class p():
         self.dialog.resize(400,140)
         
         self.dialog.setWindowTitle("Alias manager")
- 
+
+        iN0 = QtGui.QLabel("alias column:")
+        iN0.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.d0 = QtGui.QLineEdit()
+        d0DefaultValue = "A"
+        if App.ActiveDocument.Spreadsheet.PropertiesList.__contains__("AliasColumn"):
+            d0DefaultValue = App.ActiveDocument.Spreadsheet.AliasColumn
+        self.d0.setText(d0DefaultValue) # set default item
+
         iN1 = QtGui.QLabel("mode:")
         iN1.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.d1 = QtGui.QComboBox()
@@ -267,43 +304,40 @@ class p():
         self.d1.addItem("Generate part family")
         self.d1.setCurrentIndex(0) # set default item
         self.d1.currentIndexChanged['QString'].connect(disableWidget)
- 
+        
         iN2a = QtGui.QLabel("column:")
         iN2a.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         iN2b = QtGui.QLabel("from")
         iN2b.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        self.d2 = QtGui.QComboBox()
-        for i in range(0,26):
-            self.d2.addItem(alphabet_list[i])
-        for i in range(0,26):
-            for j in range(0,26):
-                self.d2.addItem(alphabet_list[i] + alphabet_list[j])
-        self.d2.setCurrentIndex(1) # set default item
+        self.d2 = QtGui.QLineEdit()
+        d2DefaultValue = "B"
+        if App.ActiveDocument.Spreadsheet.PropertiesList.__contains__("ColumnFrom"):
+            d2DefaultValue = App.ActiveDocument.Spreadsheet.ColumnFrom
+        self.d2.setText(d2DefaultValue) # set default item
 
         iN3 = QtGui.QLabel("to")
         iN3.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        iN3.hide() # set initial state hidden
-        self.d3 = QtGui.QComboBox()
-        for i in range(0,26):
-            self.d3.addItem(alphabet_list[i])
-        for i in range(0,26):
-            for j in range(0,26):
-                self.d3.addItem(alphabet_list[i] + alphabet_list[j])
-        self.d3.setCurrentIndex(2) # set default item
-        self.d3.setEnabled(False) # set initial state to not editable
-        self.d3.hide() # set initial state hidden
+        self.d3 = QtGui.QLineEdit()
+        d3DefaultValue = "C"
+        self.d3.setText(d3DefaultValue) # set default item
 
         iN4 = QtGui.QLabel("from row:")
         iN4.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.d4 = QtGui.QSpinBox()
-        self.d4.setValue(2.0) # set default item
+        d4DefaultValue = 2
+        if App.ActiveDocument.Spreadsheet.PropertiesList.__contains__("RowFrom"):
+            d4DefaultValue = App.ActiveDocument.Spreadsheet.RowFrom
+        self.d4.setValue(d4DefaultValue) # set default item
         self.d4.setSingleStep(1.0)
         self.d4.setMinimum(1.0)
 
         iN5 = QtGui.QLabel("to row:")
         iN5.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.d5 = QtGui.QSpinBox()
-        self.d5.setValue(4.0) # set default item
+        d5DefaultValue = 4
+        if App.ActiveDocument.Spreadsheet.PropertiesList.__contains__("RowTo"):
+            d5DefaultValue = App.ActiveDocument.Spreadsheet.RowTo
+        self.d5.setValue(d5DefaultValue) # set default item
         self.d5.setSingleStep(1.0)
         self.d5.setMinimum(1.0)
 
@@ -322,25 +356,33 @@ class p():
 
         # Mode
         grid.addWidget(self.d1, 0, 0, 1, 3)
+
+        # Alias Column
+        grid.addWidget(iN0, 1, 0, 1, 1)
+        grid.addWidget(self.d0, 1, 1, 1, 2)
+
         # column, column from
-        grid.addWidget(iN2a,    2, 0, 1, 1)
-        grid.addWidget(iN2b,    1, 1, 1, 1)
-        grid.addWidget(self.d2, 2, 1, 1, 1)
+        grid.addWidget(iN2a,    3, 0, 1, 1)
+        grid.addWidget(iN2b,    2, 1, 1, 1)
+        grid.addWidget(self.d2, 3, 1, 1, 1)
         # column to
-        grid.addWidget(iN3,     1, 2, 1, 1)
-        grid.addWidget(self.d3, 2, 2, 1, 1)
+        grid.addWidget(iN3,     2, 2, 1, 1)
+        grid.addWidget(self.d3, 3, 2, 1, 1)
         # from row
-        grid.addWidget(iN4,     3, 0, 1, 1)
-        grid.addWidget(self.d4, 3, 1, 1, 1)
+        grid.addWidget(iN4,     4, 0, 1, 1)
+        grid.addWidget(self.d4, 4, 1, 1, 1)
         # to row
-        grid.addWidget(iN5,     4, 0, 1, 1)
-        grid.addWidget(self.d5, 4, 1)
+        grid.addWidget(iN5,     5, 0, 1, 1)
+        grid.addWidget(self.d5, 5, 1)
         # + info
-        grid.addWidget(self.d6, 6, 0, 1, 1)
+        grid.addWidget(self.d6, 7, 0, 1, 1)
         # cancel, OK
-        grid.addWidget(okbox,   6, 1, 1, 2)
+        grid.addWidget(okbox,   7, 1, 1, 2)
 
         self.dialog.setLayout(grid)
+
+        # update widget to hide/show what we need.
+        disableWidget(self.d1.currentIndex)
 
         # # Set Tab order (not needed anymore because of enabling/disabling spinboxes)
         # self.dialog.setTabOrder(self.d3, self.d1)
@@ -359,4 +401,4 @@ class p():
     def popup(self):
         self.dialog2 = infoPopup()
         self.dialog2.exec_()
-p() 
+p()
