@@ -133,7 +133,7 @@ class p():
                     cell_from = str(alias_column) + str(i)
                     cell_to = str(column_from) + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_from))
+                    Apix + '.fcstd'.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.get(cell_from))
                     App.ActiveDocument.recompute()
 
                 FreeCAD.Console.PrintMessage("\nAliases set\n")
@@ -161,7 +161,7 @@ class p():
                     cell_to = column_to + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                     App.ActiveDocument.recompute()
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.get(cell_reference))
                     App.ActiveDocument.recompute()
                 FreeCAD.Console.PrintMessage("\nAliases moved\n")
 
@@ -192,12 +192,12 @@ class p():
                         cell_to = str(fam_range[index]) + str(i)
                         App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                         App.ActiveDocument.recompute()
-                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.get(cell_reference))
                         App.ActiveDocument.recompute()
                         sfx = str(fam_range[index]) + '1'
 
                     # save file
-                    suffix = App.ActiveDocument.Spreadsheet.getContents(sfx)
+                    suffix = App.ActiveDocument.Spreadsheet.get(sfx)
                     filename = filePrefix + '_' + suffix + '.fcstd'
                     filePath = os.path.join(docDir, filename)
                 
