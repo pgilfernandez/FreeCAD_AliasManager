@@ -109,7 +109,7 @@ class p():
                     cell_from = 'A' + str(i)
                     cell_to = str(column_from) + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_to, '')
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_from))
+                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, self.strip_apostrophe(App.ActiveDocument.Spreadsheet.getContents(cell_from)))
                     App.ActiveDocument.recompute()
 
                 FreeCAD.Console.PrintMessage("\nAliases set\n")
@@ -135,7 +135,7 @@ class p():
                     cell_to = column_to + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                     App.ActiveDocument.recompute()
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, self.strip_apostrophe(App.ActiveDocument.Spreadsheet.getContents(cell_reference)))
                     App.ActiveDocument.recompute()
                 FreeCAD.Console.PrintMessage("\nAliases moved\n")
 
@@ -166,7 +166,7 @@ class p():
                         cell_to = str(fam_range[index]) + str(i)
                         App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                         App.ActiveDocument.recompute()
-                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, self.strip_apostrophe(App.ActiveDocument.Spreadsheet.getContents(cell_reference)))
                         App.ActiveDocument.recompute()
                         sfx = str(fam_range[index]) + '1'
 
@@ -206,6 +206,18 @@ class p():
 
     def close(self):
         self.dialog.hide()
+
+    def strip_apostrophe(self, txt):
+        """Remove leading apostrophe from text.
+
+        Starting with FreeCAD 0.21, when user enters cell text in a
+        spreadsheet, an apostrophe (') will be placed in front of the
+        text by default. This raises "Illegal Macro" exceptions in
+        setAlias()
+        """
+        if txt.startswith("'"):
+            return(txt[1:])
+        return(txt)
 
 
 # ========================================================
