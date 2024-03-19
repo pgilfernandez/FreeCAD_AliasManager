@@ -135,7 +135,7 @@ class p():
                     cell_to = column_to + str(i)
                     App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                     App.ActiveDocument.recompute()
-                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                    App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference).replace("'",""))
                     App.ActiveDocument.recompute()
                 FreeCAD.Console.PrintMessage("\nAliases moved\n")
 
@@ -166,7 +166,7 @@ class p():
                         cell_to = str(fam_range[index]) + str(i)
                         App.ActiveDocument.Spreadsheet.setAlias(cell_from, '')
                         App.ActiveDocument.recompute()
-                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference))
+                        App.ActiveDocument.Spreadsheet.setAlias(cell_to, App.ActiveDocument.Spreadsheet.getContents(cell_reference).replace("'",""))
                         App.ActiveDocument.recompute()
                         sfx = str(fam_range[index]) + '1'
 
